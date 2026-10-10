@@ -1960,6 +1960,9 @@ hdr_format MediaCodec::getHdrFormat(const AString &mime, const int32_t profile,
 
 hdr_format MediaCodec::getHdrFormatForEncoder(const AString &mime, const int32_t profile,
         const int32_t colorTransfer) {
+    if (mime.equalsIgnoreCase(MEDIA_MIMETYPE_VIDEO_DOLBY_VISION)) {
+        return HDR_FORMAT_DOLBY_VISION;
+    }
     switch (colorTransfer) {
         case COLOR_TRANSFER_ST2084:
             if (mime.equalsIgnoreCase(MEDIA_MIMETYPE_VIDEO_VP9)) {
@@ -1993,12 +1996,7 @@ hdr_format MediaCodec::getHdrFormatForEncoder(const AString &mime, const int32_t
                 return HDR_FORMAT_NONE;
             }
         case COLOR_TRANSFER_HLG:
-            if (!mime.equalsIgnoreCase(MEDIA_MIMETYPE_VIDEO_DOLBY_VISION)) {
-                return HDR_FORMAT_HLG;
-            } else {
-                // TODO: DOLBY format
-                return HDR_FORMAT_NONE;
-            }
+            return HDR_FORMAT_HLG;
         default:
             return HDR_FORMAT_NONE;
     }
@@ -2006,6 +2004,9 @@ hdr_format MediaCodec::getHdrFormatForEncoder(const AString &mime, const int32_t
 
 hdr_format MediaCodec::getHdrFormatForDecoder(const AString &mime, const int32_t profile,
         const int32_t colorTransfer) {
+    if (mime.equalsIgnoreCase(MEDIA_MIMETYPE_VIDEO_DOLBY_VISION)) {
+        return HDR_FORMAT_DOLBY_VISION;
+    }
     switch (colorTransfer) {
         case COLOR_TRANSFER_ST2084:
             if (!(mHdrInfoFlags & kFlagHasHdrStaticInfo) || !profileSupport10Bits(mime, profile)) {
@@ -2013,10 +2014,7 @@ hdr_format MediaCodec::getHdrFormatForDecoder(const AString &mime, const int32_t
             }
             return mHdrInfoFlags & kFlagHasHdr10PlusInfo ? HDR_FORMAT_HDR10PLUS : HDR_FORMAT_HDR10;
         case COLOR_TRANSFER_HLG:
-            if (!mime.equalsIgnoreCase(MEDIA_MIMETYPE_VIDEO_DOLBY_VISION)) {
-                return HDR_FORMAT_HLG;
-            }
-            // TODO: DOLBY format
+            return HDR_FORMAT_HLG;
     }
     return HDR_FORMAT_NONE;
 }
@@ -2041,6 +2039,8 @@ bool MediaCodec::profileSupport10Bits(const AString &mime, const int32_t profile
             case HEVCProfileMain10HDR10Plus:
                 return true;
         }
+    } else if (mime.equalsIgnoreCase(MEDIA_MIMETYPE_VIDEO_DOLBY_VISION)) {
+        return true;
     }
     return false;
 }
